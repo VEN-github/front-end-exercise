@@ -1,5 +1,5 @@
 <template>
-  <div>{{ products }}</div>
+  <section class="pt-32">{{ products }}</section>
 </template>
 
 <script setup lang="ts">
@@ -23,7 +23,7 @@ async function getProducts() {
     toast({
       title: 'Error',
       variant: 'destructive',
-      description: error.message || 'Something went wrong. Please try again.',
+      description: error.message,
     });
   }
 }
