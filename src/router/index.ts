@@ -14,7 +14,22 @@ const router = createRouter({
       name: 'products',
       redirect: '/',
     },
+    {
+      path: '/products/:slug/:id',
+      name: 'product',
+      component: () => import('@/views/ProductView.vue'),
+      strict: true,
+      sensitive: true,
+      props: true,
+    },
   ],
+  scrollBehavior(_, _2, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0, behavior: 'smooth' };
+    }
+  },
 });
 
 export default router;

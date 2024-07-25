@@ -38,7 +38,7 @@ onMounted(async () => {
 
 async function getProducts() {
   try {
-    await productsStore.getProducts();
+    await productsStore.getProducts({ page: 0, limit: 0 });
     products.value = productsStore.products;
   } catch (error) {
     toast({
