@@ -12,7 +12,17 @@
           </p>
         </RouterLink>
         <div class="inline-flex items-center" :class="[user ? 'gap-6' : 'gap-4']">
-          <RouterLink to="/cart" class="relative">
+          <TooltipProvider v-if="!user">
+            <Tooltip>
+              <TooltipTrigger
+                ><p><ShoppingCart /></p
+              ></TooltipTrigger>
+              <TooltipContent>
+                <p>Please login to view cart</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <RouterLink v-else to="/cart" class="relative">
             <ShoppingCart />
             <p
               class="absolute -top-1.5 -right-2.5 text-xs h-5 w-5 rounded-full bg-black flex items-center justify-center text-white"
@@ -41,8 +51,10 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { ShoppingCart, ChevronDown } from 'lucide-vue-next';
+import { FirebaseError } from 'firebase/app';
 import { signOut } from 'firebase/auth';
 import { useFirebaseAuth, useCurrentUser } from 'vuefire';
+import { useToast } from '@/components/ui/toast/use-toast';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
@@ -54,9 +66,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
+const { toast } = useToast();
 const router = useRouter();
 const isShow = ref<boolean>(true);
 const lastScrollTop = ref<number>(0);
@@ -98,7 +112,7 @@ async function logout() {
 
     if (error instanceof FirebaseError) {
       errorMessage = error.message;
-    } else if (error instanceof Error) {
+    } else {
       errorMessage = error.message;
     }
 

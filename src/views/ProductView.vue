@@ -44,9 +44,23 @@
               <p class="text-3xl tracking-tight text-gray-900">{{ price }}</p>
             </div>
             <div class="mt-10 flex items-center gap-6">
-              <Button class="text-base h-12 px-16"
-                ><ShoppingCart class="mr-4" /> Add to Cart</Button
-              >
+              <TooltipProvider v-if="!user">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button class="text-base h-12 px-16" @click="addToCart">
+                      <ShoppingCart class="mr-4" />
+                      Add to Cart
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Please login to add product to cart</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button v-else class="text-base h-12 px-16" @click="addToCart">
+                <ShoppingCart class="mr-4" />
+                Add to Cart
+              </Button>
               <Button variant="ghost" size="icon">
                 <Heart />
               </Button>
@@ -98,17 +112,20 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useProductsStore } from '@/stores/products';
 import { useToast } from '@/components/ui/toast/use-toast';
 import { ShoppingCart, Heart, LoaderCircle } from 'lucide-vue-next';
+import { useCurrentUser } from 'vuefire';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/products/ProductCard.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const props = defineProps<{
   id: string;
 }>();
 
+const user = useCurrentUser();
 const productsStore = useProductsStore();
-const toast = useToast();
+const { toast } = useToast();
 const product = ref(null);
 const relatedProducts = ref([]);
 const selectedImage = ref(null);
@@ -149,6 +166,15 @@ async function getProduct() {
     });
   } finally {
     isLoading.value = false;
+  }
+}
+
+function addToCart() {
+  if (user.value === null) {
+    toast({
+      description: 'Please login to add product to cart',
+    });
+    return;
   }
 }
 </script>
