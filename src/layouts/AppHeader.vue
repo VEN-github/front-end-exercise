@@ -20,7 +20,7 @@
               0
             </p>
           </RouterLink>
-          <Button>Login</Button>
+          <Button @click="onNavigate">Login</Button>
         </div>
       </div>
     </BaseContainer>
@@ -29,12 +29,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { ShoppingCart } from 'lucide-vue-next';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
 
+const router = useRouter();
 const isShow = ref<boolean>(true);
 const lastScrollTop = ref<number>(0);
 let timeout: undefined | number;
@@ -60,5 +61,9 @@ function handleScroll() {
   timeout = setTimeout(() => {
     isShow.value = true;
   }, 500);
+}
+
+function onNavigate() {
+  router.push('/login');
 }
 </script>
