@@ -43,7 +43,21 @@
             <div class="mt-3">
               <p class="text-3xl tracking-tight text-gray-900">{{ price }}</p>
             </div>
-            <div class="mt-10 flex items-center gap-6">
+            <div class="mt-10">
+              <div class="flex items-center gap-1">
+                <Button variant="outline" size="icon" @click="decreaseQuantity">
+                  <Minus class="w-4 h-4" />
+                </Button>
+                <input
+                  :value="quantity"
+                  class="w-12 h-10 border border-gray-200 rounded pointer-events-none text-center sm:text-sm"
+                />
+                <Button variant="outline" size="icon" @click="increaseQuantity">
+                  <Plus class="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center gap-6">
               <TooltipProvider v-if="!user">
                 <Tooltip>
                   <TooltipTrigger>
@@ -60,9 +74,6 @@
               <Button v-else class="text-base h-12 px-16" @click="addToCart">
                 <ShoppingCart class="mr-4" />
                 Add to Cart
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Heart />
               </Button>
             </div>
             <div class="mt-6">
@@ -111,8 +122,9 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useProductsStore } from '@/stores/products';
 import { useToast } from '@/components/ui/toast/use-toast';
-import { ShoppingCart, Heart, LoaderCircle } from 'lucide-vue-next';
-import { useCurrentUser } from 'vuefire';
+import { ShoppingCart, Heart, LoaderCircle, Minus, Plus } from 'lucide-vue-next';
+import { useCurrentUser, useFirestore, useCollection } from 'vuefire';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
@@ -123,6 +135,7 @@ const props = defineProps<{
   id: string;
 }>();
 
+const db = useFirestore();
 const user = useCurrentUser();
 const productsStore = useProductsStore();
 const { toast } = useToast();
@@ -130,6 +143,19 @@ const product = ref(null);
 const relatedProducts = ref([]);
 const selectedImage = ref(null);
 const isLoading = ref<boolean>(false);
+const quantity = ref<number>(1);
+
+const myCartCollection = useCollection(collection(db, 'cart'));
+
+const selectedProductInCart = computed(() => {
+  if (myCartCollection.value) {
+    return myCartCollection.value?.find(
+      cart => cart.product_id == product.value?.id && cart.user_id == user.value?.uid
+    );
+  }
+
+  return null;
+});
 
 const price = computed(() => {
   return product.value
@@ -169,12 +195,46 @@ async function getProduct() {
   }
 }
 
-function addToCart() {
+async function addToCart() {
   if (user.value === null) {
     toast({
       description: 'Please login to add product to cart',
     });
     return;
   }
+
+  if (selectedProductInCart.value) {
+    await updateDoc(doc(db, 'cart', selectedProductInCart.value.id), {
+      quantity: selectedProductInCart.value.quantity + quantity.value,
+    });
+
+    toast({
+      description: 'Product quantity updated',
+    });
+    return;
+  }
+
+  const newDoc = await addDoc(collection(db, 'cart'), {
+    product_id: product.value?.id.toString(),
+    user_id: user.value?.uid,
+    quantity: quantity.value,
+    ...product.value,
+  });
+
+  if (newDoc.id) {
+    toast({
+      description: 'Product added to cart',
+    });
+  }
+}
+
+function decreaseQuantity() {
+  if (quantity.value > 1) {
+    quantity.value--;
+  }
+}
+
+function increaseQuantity() {
+  quantity.value++;
 }
 </script>

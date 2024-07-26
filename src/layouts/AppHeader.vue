@@ -25,9 +25,10 @@
           <RouterLink v-else to="/cart" class="relative">
             <ShoppingCart />
             <p
+              v-if="cartCount > 0"
               class="absolute -top-1.5 -right-2.5 text-xs h-5 w-5 rounded-full bg-black flex items-center justify-center text-white"
             >
-              0
+              {{ cartCount }}
             </p>
           </RouterLink>
           <DropdownMenu>
@@ -48,13 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { ShoppingCart, ChevronDown } from 'lucide-vue-next';
 import { FirebaseError } from 'firebase/app';
 import { signOut } from 'firebase/auth';
-import { useFirebaseAuth, useCurrentUser } from 'vuefire';
+import { useFirebaseAuth, useCurrentUser, useFirestore, useCollection } from 'vuefire';
 import { useToast } from '@/components/ui/toast/use-toast';
+import { collection } from 'firebase/firestore';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
@@ -68,6 +70,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+const db = useFirestore();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
 const { toast } = useToast();
@@ -75,6 +78,16 @@ const router = useRouter();
 const isShow = ref<boolean>(true);
 const lastScrollTop = ref<number>(0);
 let timeout: undefined | number;
+
+const myCartCollection = useCollection(collection(db, 'cart'));
+
+const filteredCartCollection = computed(() => {
+  return myCartCollection.value?.filter(cart => cart.user_id === user.value?.uid);
+});
+
+const cartCount = computed(() => {
+  return filteredCartCollection.value?.reduce((total, cart) => total + cart.quantity, 0);
+});
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true });
