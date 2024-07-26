@@ -25,7 +25,6 @@
           <RouterLink v-else to="/cart" class="relative">
             <ShoppingCart />
             <p
-              v-if="cartCount > 0"
               class="absolute -top-1.5 -right-2.5 text-xs h-5 w-5 rounded-full bg-black flex items-center justify-center text-white"
             >
               {{ cartCount }}
