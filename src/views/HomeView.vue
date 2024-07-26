@@ -12,66 +12,28 @@
             aperiam.
           </p>
         </div>
-        <div class="mb-8 flex items-center justify-between">
-          <Input v-model="search" type="search" placeholder="Search..." class="w-96" />
-          <div class="flex gap-8">
+        <div class="mb-8 flex flex-col gap-4 justify-between sm:items-center sm:flex-row">
+          <Input v-model="search" type="search" placeholder="Search..." class="w-full sm:w-96" />
+          <div class="flex gap-8 justify-end">
+            <select v-model="selectedCategory" class="text-gray-900">
+              <option value="" disabled>Category</option>
+              <option value="all">All</option>
+              <option v-for="category in categories" :key="category.id" :value="category.id">
+                {{ category.name }}
+              </option>
+            </select>
             <div class="relative">
               <details class="group [&_summary::-webkit-details-marker]:hidden">
-                <summary
-                  class="flex cursor-pointer items-center gap-2 text-gray-900 transition hover:border-gray-600"
-                >
-                  <span class="text-sm font-medium"> Category </span>
+                <summary class="flex cursor-pointer items-center gap-2 text-gray-900">
+                  <span> Price </span>
                   <span class="transition group-open:-rotate-180">
-                    <ChevronDown class="h-4 w-4" />
+                    <ChevronDown color="#111827" class="h-4 w-4" />
                   </span>
                 </summary>
                 <div
                   class="z-20 group-open:absolute group-open:end-0 group-open:top-auto group-open:mt-2"
                 >
-                  <div class="w-96 rounded border border-gray-200 bg-white">
-                    <div class="flex items-center justify-end p-4">
-                      <button
-                        type="button"
-                        class="text-sm text-gray-900 underline underline-offset-4"
-                        @click="selectedCategory = null"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                    <ul class="space-y-1 border-t border-gray-200 p-4">
-                      <li v-for="category in categories" :key="category.id">
-                        <button
-                          type="button"
-                          class="font-medium capitalize"
-                          :class="
-                            selectedCategory === category.id
-                              ? 'text-gray-900 underline'
-                              : 'text-gray-500'
-                          "
-                          @click="selectedCategory = category.id"
-                        >
-                          {{ category.name }}
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </details>
-            </div>
-            <div class="relative">
-              <details class="group [&_summary::-webkit-details-marker]:hidden">
-                <summary
-                  class="flex cursor-pointer items-center gap-2 text-gray-900 transition hover:border-gray-600"
-                >
-                  <span class="text-sm font-medium"> Price </span>
-                  <span class="transition group-open:-rotate-180">
-                    <ChevronDown class="h-4 w-4" />
-                  </span>
-                </summary>
-                <div
-                  class="z-20 group-open:absolute group-open:end-0 group-open:top-auto group-open:mt-2"
-                >
-                  <div class="w-96 rounded border border-gray-200 bg-white">
+                  <div class="w-72 rounded border border-gray-200 bg-white sm:w-96">
                     <div class="flex items-center justify-end p-4">
                       <button
                         type="button"
@@ -144,14 +106,17 @@ const categories = ref([]);
 const products = ref([]);
 const { toast } = useToast();
 const search = ref('');
-const selectedCategory = ref(null);
+const selectedCategory = ref('');
 const price = reactive({ from: '', to: '' });
 const isLoading = ref<boolean>(false);
 
 const filters = computed(() => {
   return {
     search: search.value || null,
-    category: selectedCategory.value,
+    category:
+      selectedCategory.value === 'all' || selectedCategory.value === ''
+        ? null
+        : selectedCategory.value,
     min_price: price.from || null,
     max_price: price.to || null,
   };

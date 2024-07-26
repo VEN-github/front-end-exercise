@@ -1,6 +1,6 @@
 <template>
   <header
-    class="fixed top-0 left-0 w-full bg-white shadow-sm z-50 py-10 transition-transform duration-300"
+    class="fixed top-0 left-0 w-full bg-white shadow-sm z-50 py-8 transition-transform duration-300"
     :class="[isShow ? 'translate-y-0' : '-translate-y-96']"
   >
     <BaseContainer>
@@ -8,7 +8,7 @@
         <RouterLink to="/" class="inline-flex items-center gap-2">
           <img src="@/assets/images/logo.svg" alt="Logo" />
           <p class="text-base font-semibold sm:text-3xl">
-            Fake <span class="text-amber-600">Store</span>
+            Fake<span class="text-amber-600">Store</span>
           </p>
         </RouterLink>
         <div class="inline-flex items-center gap-8">
