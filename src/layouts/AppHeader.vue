@@ -11,7 +11,7 @@
             Fake<span class="text-amber-600">Store</span>
           </p>
         </RouterLink>
-        <div class="inline-flex items-center gap-8">
+        <div class="inline-flex items-center" :class="[user ? 'gap-6' : 'gap-4']">
           <RouterLink to="/cart" class="relative">
             <ShoppingCart />
             <p
@@ -20,7 +20,17 @@
               0
             </p>
           </RouterLink>
-          <Button>Login</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div v-if="user" class="flex items-center gap-2">
+                {{ user.displayName }}<ChevronDown class="h-4 w-4" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem class="cursor-pointer" @click="logout">Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button v-if="!user" @click="onNavigate">Login</Button>
         </div>
       </div>
     </BaseContainer>
@@ -29,12 +39,25 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { RouterLink } from 'vue-router';
-import { ShoppingCart } from 'lucide-vue-next';
+import { RouterLink, useRouter } from 'vue-router';
+import { ShoppingCart, ChevronDown } from 'lucide-vue-next';
+import { signOut } from 'firebase/auth';
+import { useFirebaseAuth, useCurrentUser } from 'vuefire';
 
 import BaseContainer from '@/components/ui/base/BaseContainer.vue';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
+const auth = useFirebaseAuth();
+const user = useCurrentUser();
+const router = useRouter();
 const isShow = ref<boolean>(true);
 const lastScrollTop = ref<number>(0);
 let timeout: undefined | number;
@@ -60,5 +83,26 @@ function handleScroll() {
   timeout = setTimeout(() => {
     isShow.value = true;
   }, 500);
+}
+
+function onNavigate() {
+  router.push('/login');
+}
+
+async function logout() {
+  try {
+    await signOut(auth);
+    router.push('/login');
+  } catch (error) {
+    let errorMessage = 'An unknown error occurred.';
+
+    if (error instanceof FirebaseError) {
+      errorMessage = error.message;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+  }
 }
 </script>
